@@ -106,6 +106,7 @@ def plot(xdata, ydata,
     pyplot.plot([lower_crossing_x, lower_crossing_x], [miny, maxy], '--', color='black')
     pyplot.plot([upper_crossing_x, upper_crossing_x], [miny, maxy], '--', color='black')
 
+    pyplot.savefig("figure.png")
     pyplot.show()
 
 
