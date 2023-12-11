@@ -36,7 +36,7 @@ currency_type   = "$"   # Currency Symbol to show when calculating cost to run j
 #   can use whichever GPIO you prefer/have available.
 
 ### Outputs
-gpio_heat = 23  # Switches zero-cross solid-state-relay
+gpio_heat = 22 # Switches zero-cross solid-state-relay
 
 ### Thermocouple Adapter selection:
 #   max31855 - bitbang SPI interface
@@ -45,12 +45,12 @@ max31855 = 0
 max31856 = 1
 # see lib/max31856.py for other thermocouple_type, only applies to max31856
 # uncomment this if using MAX-31856
-#thermocouple_type = MAX31856.MAX31856_S_TYPE
+thermocouple_type = MAX31856.MAX31856_K_TYPE
 
 ### Thermocouple Connection (using bitbang interfaces)
-gpio_sensor_cs = 27
-gpio_sensor_clock = 22
-gpio_sensor_data = 17
+gpio_sensor_cs = 25
+gpio_sensor_clock = 11
+gpio_sensor_data = 9
 gpio_sensor_di = 10 # only used with max31856
 
 ########################################################################
