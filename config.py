@@ -71,10 +71,9 @@ sensor_time_wait = 2
 # well with the simulated oven. You must tune them to work well with
 # your specific kiln. Note that the integral pid_ki is
 # inverted so that a smaller number means more integral action.
-pid_kp = 25   # Proportional 25,200,200
-pid_ki = 10   # Integral
-pid_kd = 200  # Derivative
-
+pid_kp = 7.738777418433634   # Proportional 25,200,200
+pid_ki = 21.41353534119904   # Integral
+pid_kd = 320.6070696521869  # Derivative
 
 ########################################################################
 #
