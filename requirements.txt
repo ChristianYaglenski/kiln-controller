@@ -8,3 +8,4 @@ Adafruit-MAX31855
 Adafruit-GPIO
 websocket-client
 matplotlib
+requests
