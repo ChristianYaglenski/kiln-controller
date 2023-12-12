@@ -39,12 +39,15 @@ class Watcher(object):
 
     def send_alert(self,msg):
         log.error("sending alert: %s" % msg)
-        try: 
+        try:
             r = requests.post(self.slack_hook_url, json={'text': msg })
         except:
             pass
 
     def has_errors(self):
+        if 'state' in self.stats:
+            if self.stats['state'] == 'IDLE':
+                return False;
         if 'time' not in self.stats:
             log.error("no data")
             return True
@@ -52,7 +55,7 @@ class Watcher(object):
             if abs(self.stats['err']) > self.temp_error_limit:
                 log.error("temp out of whack %0.2f" % self.stats['err'])
                 return True
-        return False 
+        return False
 
     def run(self):
         log.info("started watching %s" % self.kiln_url)
