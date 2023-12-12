@@ -23,7 +23,7 @@ listening_port = 8081
 # elements that when my switches are set to high, consume 9460 watts.
 
 kwh_rate        = 0.138075  # cost per kilowatt hour per currency_type to calculate cost to run job
-kw_elements     = 5.558 # if the kiln elements are on, the wattage in kilowatts
+kw_elements     = 6.100 # if the kiln elements are on, the wattage in kilowatts
 currency_type   = "$"   # Currency Symbol to show when calculating cost to run job
 
 ########################################################################
@@ -71,9 +71,9 @@ sensor_time_wait = 2
 # well with the simulated oven. You must tune them to work well with
 # your specific kiln. Note that the integral pid_ki is
 # inverted so that a smaller number means more integral action.
-pid_kp = 7.738777418433634   # Proportional 25,200,200
-pid_ki = 21.41353534119904   # Integral
-pid_kd = 320.6070696521869  # Derivative
+pid_kp = 3.8312383768101994   # Proportional 25,200,200
+pid_ki = 65.30201072133904   # Integral
+pid_kd = 239.63205447331578  # Derivative
 
 ########################################################################
 #
