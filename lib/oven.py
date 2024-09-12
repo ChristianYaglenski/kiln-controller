@@ -200,7 +200,7 @@ class Oven(threading.Thread):
         threading.Thread.__init__(self)
         self.daemon = True
         self.temperature = 0
-        self.starting_temperature = self.temperature
+        self.starting_temperature = self.board.temp_sensor.temperature + config.thermocouple_offset
         self.time_step = config.sensor_time_wait
         self.reset()
 
@@ -213,7 +213,7 @@ class Oven(threading.Thread):
         self.totaltime = 0
         self.target = 0
         self.heat = 0
-        self.starting_temperature = 0
+        self.starting_temperature = self.board.temp_sensor.temperature + config.thermocouple_offset
         self.pid = PID(ki=config.pid_ki, kd=config.pid_kd, kp=config.pid_kp)
 
     def run_profile(self, profile, startat=0):
@@ -235,7 +235,7 @@ class Oven(threading.Thread):
         self.startat = startat * 60
         self.runtime = self.startat
         self.start_time = datetime.datetime.now() - datetime.timedelta(seconds=self.startat)
-        self.starting_temperature = self.temperature
+        self.starting_temperature = self.board.temp_sensor.temperature + config.thermocouple_offset
         self.profile = profile
         self.totaltime = profile.get_duration()
         self.state = "RUNNING"
