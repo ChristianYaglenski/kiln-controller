@@ -200,6 +200,7 @@ class Oven(threading.Thread):
         threading.Thread.__init__(self)
         self.daemon = True
         self.temperature = 0
+        self.starting_temperature = self.temperature
         self.time_step = config.sensor_time_wait
         self.reset()
 
@@ -212,6 +213,7 @@ class Oven(threading.Thread):
         self.totaltime = 0
         self.target = 0
         self.heat = 0
+        self.starting_temperature = 0
         self.pid = PID(ki=config.pid_ki, kd=config.pid_kd, kp=config.pid_kp)
 
     def run_profile(self, profile, startat=0):
@@ -233,6 +235,7 @@ class Oven(threading.Thread):
         self.startat = startat * 60
         self.runtime = self.startat
         self.start_time = datetime.datetime.now() - datetime.timedelta(seconds=self.startat)
+        self.starting_temperature = self.temperature
         self.profile = profile
         self.totaltime = profile.get_duration()
         self.state = "RUNNING"
@@ -267,7 +270,7 @@ class Oven(threading.Thread):
         self.runtime = runtime_delta.total_seconds()
 
     def update_target_temp(self):
-        self.target = self.profile.get_target_temperature(self.runtime)
+        self.target = self.profile.get_target_temperature(self.runtime,self.starting_temperature)
 
     def reset_if_emergency(self):
         '''reset if the temperature is way TOO HOT, or other critical errors detected'''
@@ -552,7 +555,7 @@ class Profile():
     def get_duration(self):
         return max([t for (t, x) in self.data])
 
-    def get_surrounding_points(self, time):
+    def get_surrounding_points(self, time, startingTemp = 65):
         if time > self.get_duration():
             return (None, None)
 
@@ -561,17 +564,17 @@ class Profile():
 
         for i in range(len(self.data)):
             if time < self.data[i][0]:
-                prev_point = self.data[i-1]
+                prev_point = self.data[i-1] if i > 0 else [0, startingTemp]
                 next_point = self.data[i]
                 break
 
         return (prev_point, next_point)
 
-    def get_target_temperature(self, time):
+    def get_target_temperature(self, time, startingTemp = 65):
         if time > self.get_duration():
             return 0
 
-        (prev_point, next_point) = self.get_surrounding_points(time)
+        (prev_point, next_point) = self.get_surrounding_points(time, startingTemp)
 
         incl = float(next_point[1] - prev_point[1]) / float(next_point[0] - prev_point[0])
         temp = prev_point[1] + (time - prev_point[0]) * incl
