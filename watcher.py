@@ -73,16 +73,16 @@ class Watcher(object):
                 msg = "error kiln needs help. %s" % json.dumps(self.stats,indent=2, sort_keys=True)
                 self.send_alert(msg)
                 self.bad_checks = 0
-            
+
             time.sleep(self.sleepfor)
 
 if __name__ == "__main__":
 
     watcher = Watcher(
-        kiln_url = "http://192.168.1.84:8081/api/stats",
-        slack_hook_url = "you must add this",
+        kiln_url = "http://kiln.local:80/api/stats",
+        slack_hook_url = "https://hooks.slack.com/services/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",
         bad_check_limit = 6,
-        temp_error_limit = 10,
+        temp_error_limit = 20,
         sleepfor = 10 )
 
     watcher.run()
