@@ -10,7 +10,7 @@ import logging
 # configure an incoming web hook on the slack channel
 # set slack_hook_url to that
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(filename="kiln-watcher.log",level=logging.INFO)
 log = logging.getLogger(__name__)
 
 class Watcher(object):

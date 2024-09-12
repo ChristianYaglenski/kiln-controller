@@ -217,6 +217,17 @@ class Oven(threading.Thread):
         self.pid = PID(ki=config.pid_ki, kd=config.pid_kd, kp=config.pid_kp)
 
     def run_profile(self, profile, startat=0):
+        filename = f'{profile.name}-{datetime.datetime.now()}.log'
+        logging.basicConfig(level=config.log_level, format=config.log_format, filename=filename)
+
+        # your logging setup
+
+        should_roll_over = os.path.isfile(filename)
+        handler = logging.handlers.RotatingFileHandler(filename, mode='w', backupCount=5)
+        if should_roll_over:  # log already exists, roll over!
+            handler.doRollover()
+
+
         self.reset()
 
         if self.board.temp_sensor.noConnection:
