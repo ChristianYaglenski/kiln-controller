@@ -90,7 +90,7 @@ class Board(object):
 
     def create_temp_sensor(self):
         if config.simulate == True:
-            self.temp_sensor = TempSensorSimulate()
+            self.temp_sensor = TempSensorSimulated()
         else:
             self.temp_sensor = TempSensorReal()
 
