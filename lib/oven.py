@@ -218,7 +218,7 @@ class Oven(threading.Thread):
         self.pid = PID(ki=config.pid_ki, kd=config.pid_kd, kp=config.pid_kp)
 
     def run_profile(self, profile, startat=0):
-        filename = f'/var/log/{profile.name}-{datetime.datetime.now()}.log'
+        filename = f'./logs/{profile.name}-{datetime.datetime.now()}.log'
         logging.basicConfig(level=config.log_level, format=config.log_format, filename=filename, filemode="a")
 
         # your logging setup
