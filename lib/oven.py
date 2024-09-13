@@ -7,6 +7,8 @@ import logging.handlers
 import json
 import config
 import os
+from slugify import slugify
+
 
 log = logging.getLogger(__name__)
 
@@ -218,15 +220,15 @@ class Oven(threading.Thread):
         self.pid = PID(ki=config.pid_ki, kd=config.pid_kd, kp=config.pid_kp)
 
     def run_profile(self, profile, startat=0):
-        filename = f'{os.getcwd()}/logs/{"_".join(profile.name)}-{datetime.datetime.now()}.log'
+        filename = f'{os.getcwd()}/logs/{slugify(profile.name)}-{datetime.datetime.now()}.log'
         log.info(f'logfile is {filename}')
+        should_roll_over = os.path.isfile(filename)
+
         for handler in logging.root.handlers[:]:
             logging.root.removeHandler(handler)
         logging.basicConfig(level=config.log_level, format=config.log_format, filename=filename, filemode="w")
 
         # your logging setup
-
-        should_roll_over = os.path.isfile(filename)
         handler = logging.handlers.RotatingFileHandler(filename, mode='w', backupCount=5)
         if should_roll_over:  # log already exists, roll over!
             handler.doRollover()

@@ -9,3 +9,4 @@ Adafruit-GPIO
 websocket-client
 matplotlib
 requests
+python-slugify
