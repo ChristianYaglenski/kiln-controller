@@ -219,7 +219,7 @@ class Oven(threading.Thread):
 
     def run_profile(self, profile, startat=0):
         filename = f'{os.getcwd()}/{profile.name}-{datetime.datetime.now()}.log'
-        print(f'logfile is {filename}')
+        log.info(f'logfile is {filename}')
         logging.basicConfig(level=config.log_level, format=config.log_format, filename=filename, filemode="a")
 
         # your logging setup
