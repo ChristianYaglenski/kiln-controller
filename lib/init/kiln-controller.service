@@ -1,9 +1,11 @@
 [Unit]
 Description=kiln-controller
+After=multi-user.target
+Requires=network.target
 
 [Service]
 ExecStart=/home/pi/kiln-controller/venv/bin/python /home/pi/kiln-controller/kiln-controller.py
-User=pi
+WorkingDirectory=/home/pi/kiln-controller
 
 [Install]
 WantedBy=multi-user.target
