@@ -1,8 +1,7 @@
 import logging
 import os
-
-# uncomment this if using MAX-31856
-from lib.max31856 import MAX31856
+from digitalio import DigitalInOut
+import busio
 
 ########################################################################
 #
@@ -21,37 +20,107 @@ listening_port = 80
 # This is used to calculate a cost estimate before a run. It's also used
 # to produce the actual cost during a run. My kiln has three
 # elements that when my switches are set to high, consume 9460 watts.
-
 kwh_rate        = 0.138075  # cost per kilowatt hour per currency_type to calculate cost to run job
 kw_elements     = 6.100 # if the kiln elements are on, the wattage in kilowatts
 currency_type   = "$"   # Currency Symbol to show when calculating cost to run job
 
 ########################################################################
 #
-#   GPIO Setup (BCM SoC Numbering Schema)
+# Hardware Setup (uses BCM Pin Numbering)
 #
-#   Check the RasPi docs to see where these GPIOs are
-#   connected on the P1 header for your board type/rev.
-#   These were tested on a Pi B Rev2 but of course you
-#   can use whichever GPIO you prefer/have available.
+# kiln-controller.py uses SPI interface from the blinka library to read
+# temperature data from the adafruit-31855 or adafruit-31856.
+# Blinka supports many different boards. I've only tested raspberry pi.
+#
+# First you must decide whether to use hardware spi or software spi.
+#
+# Hardware SPI
+#
+# - faster
+# - requires 3 specific GPIO pins be used on rpis
+# - no pins are listed in this config file
+#
+# Software SPI
+#
+# - slower (which will not matter for reading a thermocouple
+# - can use any GPIO pins
+# - pins must be specified in this config file
 
-### Outputs
-gpio_heat = 22 # Switches zero-cross solid-state-relay
+#######################################
+# SPI pins if you choose Hardware SPI #
+#######################################
+# On the raspberry pi, you MUST use predefined
+# pins for HW SPI. In the case of the adafruit-31855, only 3 pins are used:
+#
+#    SPI0_SCLK = BCM pin 11 = CLK on the adafruit-31855
+#    SPI0_MOSI = BCM pin 10 = not connected
+#    SPI0_MISO = BCM pin 9  = D0 on the adafruit-31855
+#
+# plus a GPIO output to connect to CS. You can use any GPIO pin you want.
+# I chose gpio pin 5:
+#
+#    GPIO5    = BCM pin 5   = CS on the adafruit-31855
+#
+# Note that NO pins are configured in this file for hardware spi
 
-### Thermocouple Adapter selection:
-#   max31855 - bitbang SPI interface
-#   max31856 - bitbang SPI interface. must specify thermocouple_type.
+#######################################
+# SPI pins if you choose software spi #
+#######################################
+# For software SPI, you can choose any GPIO pins you like.
+# You must connect clock, mosi, miso and cs each to a GPIO pin
+# and configure them below based on your connections.
+
+#######################################
+# SPI is Autoconfigured !!!
+#######################################
+# whether you choose HW or SW spi, it is autodetected. If you list the PINs
+# below, software spi is assumed.
+
+#######################################
+# Output to control the relay
+#######################################
+# A single GPIO pin is used to control a relay which controls the kiln.
+# I use GPIO pin 23.
+
+try:
+    import board
+    # spi_sclk  = board.D17    #spi clock
+    # spi_miso  = board.D27    #spi Microcomputer In Serial Out
+    # spi_cs    = board.D22    #spi Chip Select
+    # spi_mosi  = board.D10    #spi Microcomputer Out Serial In (not connected)
+    gpio_heat = board.D22    #output that controls relay
+    gpio_heat_invert = False #invert the output state
+except (NotImplementedError,AttributeError):
+    print("not running on blinka recognized board, probably a simulation")
+
+#######################################
+### Thermocouple breakout boards
+#######################################
+# There are only two breakoutboards supported.
+#   max31855 - only supports type K thermocouples
+#   max31856 - supports many thermocouples
 max31855 = 0
 max31856 = 1
-# see lib/max31856.py for other thermocouple_type, only applies to max31856
-# uncomment this if using MAX-31856
-thermocouple_type = MAX31856.MAX31856_K_TYPE
+# uncomment these two lines if using MAX-31856
+import adafruit_max31856
+thermocouple_type = adafruit_max31856.ThermocoupleType.K
 
-### Thermocouple Connection (using bitbang interfaces)
-gpio_sensor_cs = 25
-gpio_sensor_clock = 11
-gpio_sensor_data = 9
-gpio_sensor_di = 10 # only used with max31856
+# here are the possible max-31856 thermocouple types
+#   ThermocoupleType.B
+#   ThermocoupleType.E
+#   ThermocoupleType.J
+#   ThermocoupleType.K
+#   ThermocoupleType.N
+#   ThermocoupleType.R
+#   ThermocoupleType.S
+#   ThermocoupleType.T
+
+########################################################################
+#
+# If your kiln is above the starting temperature of the schedule when you
+# click the Start button... skip ahead and begin at the first point in
+# the schedule matching the current kiln temperature.
+seek_start = True
 
 ########################################################################
 #
@@ -71,9 +140,9 @@ sensor_time_wait = 2
 # well with the simulated oven. You must tune them to work well with
 # your specific kiln. Note that the integral pid_ki is
 # inverted so that a smaller number means more integral action.
-pid_kp = 3.8312383768101994   # Proportional 25,200,200
-pid_ki = 65.30201072133904   # Integral
-pid_kd = 239.63205447331578  # Derivative
+pid_kp = 10   # Proportional 25,200,200
+pid_ki = 80   # Integral
+pid_kd = 220.83497910261562 # Derivative
 
 ########################################################################
 #
@@ -87,7 +156,7 @@ stop_integral_windup = True
 #
 #   Simulation parameters
 simulate = False
-sim_t_env      = 60.0   # deg C
+sim_t_env      = 65   # deg
 sim_c_heat     = 500.0  # J/K  heat capacity of heat element
 sim_c_oven     = 5000.0 # J/K  heat capacity of oven
 sim_p_heat     = 5450.0 # W    heating power of oven
@@ -96,6 +165,10 @@ sim_R_o_cool   = 0.05   # K/W  " with cooling
 sim_R_ho_noair = 0.1    # K/W  thermal resistance heat element -> oven
 sim_R_ho_air   = 0.05   # K/W  " with internal air circulation
 
+# if you want simulations to happen faster than real time, this can be
+# set as high as 1000 to speed simulations up by 1000 times.
+sim_speedup_factor = 1
+
 
 ########################################################################
 #
@@ -103,7 +176,6 @@ sim_R_ho_air   = 0.05   # K/W  " with internal air circulation
 #
 # If you change the temp_scale, all settings in this file are assumed to
 # be in that scale.
-
 temp_scale          = "f" # c = Celsius | f = Fahrenheit - Unit to display
 time_scale_slope    = "h" # s = Seconds | m = Minutes | h = Hours - Slope displayed in temp_scale per time_scale_slope
 time_scale_profile  = "m" # s = Seconds | m = Minutes | h = Hours - Enter and view target time in time_scale_profile
@@ -113,7 +185,7 @@ time_scale_profile  = "m" # s = Seconds | m = Minutes | h = Hours - Enter and vi
 # naturally cool off. If your SSR has failed/shorted/closed circuit, this
 # means your kiln receives full power until your house burns down.
 # this should not replace you watching your kiln or use of a kiln-sitter
-emergency_shutoff_temp = 2300 #cone 9
+emergency_shutoff_temp = 2264 #cone 7
 
 # If the current temperature is outside the pid control window,
 # delay the schedule until it does back inside. This allows for heating
@@ -127,7 +199,7 @@ kiln_must_catch_up = True
 # or 100% off because the kiln is too hot. No integral builds up
 # outside the window. The bigger you make the window, the more
 # integral you will accumulate. This should be a positive integer.
-pid_control_window = 2 #degrees
+pid_control_window = 5 #degrees
 
 # thermocouple offset
 # If you put your thermocouple in ice water and it reads 36F, you can
@@ -135,11 +207,11 @@ pid_control_window = 2 #degrees
 # cheap thermocouple.  Invest in a better thermocouple.
 thermocouple_offset=0
 
-# number of samples of temperature to average.
-# If you suffer from the high temperature kiln issue and have set
-# honour_theromocouple_short_errors to False,
-# you will likely need to increase this (eg I use 40)
-temperature_average_samples = 40
+# number of samples of temperature to take over each duty cycle.
+# The larger the number, the more load on the board. K type
+# thermocouples have a precision of about 1/2 degree C.
+# The median of these samples is used for the temperature.
+temperature_average_samples = 20
 
 # Thermocouple AC frequency filtering - set to True if in a 50Hz locale, else leave at False for 60Hz locale
 ac_freq_50hz = False
@@ -153,16 +225,25 @@ ac_freq_50hz = False
 # - unknown error with thermocouple
 # - too many errors in a short period from thermocouple
 # but in some cases, you might want to ignore a specific error, log it,
-# and continue running your profile.
+# and continue running your profile instead of having the process die.
+#
+# You should only set these to True if you experience a problem
+# and WANT to ignore it to complete a firing.
 ignore_temp_too_high = False
-ignore_lost_connection_tc = False
-ignore_unknown_tc_error = False
-ignore_too_many_tc_errors = False
-# some kilns/thermocouples start erroneously reporting "short"
-# errors at higher temperatures due to plasma forming in the kiln.
-# Set this to True to ignore these errors and assume the temperature
-# reading was correct anyway
+ignore_tc_lost_connection = False
+ignore_tc_cold_junction_range_error = False
+ignore_tc_range_error = False
+ignore_tc_cold_junction_temp_high = False
+ignore_tc_cold_junction_temp_low = False
+ignore_tc_temp_high = False
+ignore_tc_temp_low = False
+ignore_tc_voltage_error = False
 ignore_tc_short_errors = False
+ignore_tc_unknown_error = False
+
+# This overrides all possible thermocouple errors and prevents the
+# process from exiting.
+ignore_tc_too_many_errors = False
 
 ########################################################################
 # automatic restarts - if you have a power brown-out and the raspberry pi
@@ -185,3 +266,14 @@ automatic_restart_state_file = os.path.abspath(os.path.join(os.path.dirname( __f
 # See https://github.com/jbruce12000/kiln-profiles
 kiln_profiles_directory = os.path.abspath(os.path.join(os.path.dirname( __file__ ),"storage", "profiles"))
 #kiln_profiles_directory = os.path.abspath(os.path.join(os.path.dirname( __file__ ),'..','kiln-profiles','pottery'))
+
+
+########################################################################
+# low temperature throttling of elements
+# kiln elements have lots of power and tend to drastically overshoot
+# at low temperatures. When under the set point and outside the PID
+# control window and below throttle_below_temp, only throttle_percent
+# of the elements are used max.
+# To prevent throttling, set throttle_percent to 100.
+throttle_below_temp = 300
+throttle_percent = 20
