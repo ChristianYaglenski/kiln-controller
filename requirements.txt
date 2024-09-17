@@ -3,7 +3,11 @@ greenlet
 bottle
 gevent
 gevent-websocket
+RPi.GPIO
+Adafruit-MAX31855
+Adafruit-GPIO
 websocket-client
+matplotlib
 requests
 
 # for folks running raspberry pis
@@ -23,3 +27,4 @@ adafruit-circuitpython-bitbangio
 
 # untested - for mcp9600 and mcp9601
 #adafruit-circuitpython-mcp9600
+python-slugify
