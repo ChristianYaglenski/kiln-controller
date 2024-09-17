@@ -347,6 +347,16 @@ class Oven(threading.Thread):
         self.pid = PID(ki=config.pid_ki, kd=config.pid_kd, kp=config.pid_kp)
         self.catching_up = False
 
+    def post_run_reset(self):
+        self.state = "DONE"
+        self.profile = None
+        self.target = 0
+        self.heat = 0
+        self.heat_rate = 0
+        self.heat_rate_temps = []
+        self.pid = PID(ki=config.pid_ki, kd=config.pid_kd, kp=config.pid_kp)
+        self.catching_up = False
+
     @staticmethod
     def get_start_from_temperature(profile, temp):
         target_temp = profile.get_target_temperature(0)
@@ -379,7 +389,7 @@ class Oven(threading.Thread):
         log.debug('run_profile run on thread' + threading.current_thread().name)
         runtime = startat * 60
         if allow_seek:
-            if self.state == 'IDLE':
+            if self.state == 'IDLE' or self.state == 'DONE':
                 if config.seek_start:
                     temp = self.board.temp_sensor.temperature()  # Defined in a subclass
                     runtime += self.get_start_from_temperature(profile, temp)
@@ -396,6 +406,10 @@ class Oven(threading.Thread):
 
     def abort_run(self):
         self.reset()
+        self.save_automatic_restart_state()
+
+    def finish_run(self):
+        self.post_run_reset()
         self.save_automatic_restart_state()
 
     def get_start_time(self):
@@ -449,7 +463,7 @@ class Oven(threading.Thread):
         if self.runtime > self.totaltime:
             log.info("schedule ended, shutting down")
             log.info("total cost = %s%.2f" % (config.currency_type,self.cost))
-            self.abort_run()
+            self.finish_run()
 
     def update_cost(self):
         if self.heat:

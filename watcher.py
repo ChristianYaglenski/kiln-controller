@@ -23,6 +23,7 @@ class Watcher(object):
         self.sleepfor = sleepfor
         self.bad_checks = 0
         self.stats = {}
+        self.last_state = 'IDLE'
 
     def get_stats(self):
         try:
@@ -57,10 +58,26 @@ class Watcher(object):
                 return True
         return False
 
+    def has_finished(self):
+        if 'state' in self.stats:
+            if self.stats['state'] == 'DONE':
+                return True
+        return False
+
     def run(self):
         log.info("started watching %s" % self.kiln_url)
+        self.stats = self.get_stats()
+        if 'state' in self.stats:
+            self.last_state = self.stats['state']
+
         while(True):
             self.stats = self.get_stats()
+
+            if self.has_finished() and self.last_state != 'DONE':
+                self.last_state = 'DONE'
+                self.send_alert("Kiln has finished it's run. Stats are " + self.stats)
+                continue
+
             if self.has_errors():
                 self.bad_checks = self.bad_checks + 1
             else:
@@ -73,6 +90,9 @@ class Watcher(object):
                 msg = "error kiln needs help. %s" % json.dumps(self.stats,indent=2, sort_keys=True)
                 self.send_alert(msg)
                 self.bad_checks = 0
+
+            if 'state' in self.stats:
+                self.last_state = self.stats['state']
 
             time.sleep(self.sleepfor)
 

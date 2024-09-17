@@ -51,12 +51,13 @@ def state():
 @app.get('/api/stats')
 def handle_api():
     log.info("/api/stats command received")
+    stats = {}
+    if hasattr(oven, "state"):
+        stats.update({"state": oven.state})
     if hasattr(oven, "pid"):
-        if hasattr(oven, "state"):
-            if oven.state == "IDLE":
-                return json.dumps({"state":oven.state})
         if hasattr(oven.pid, "pidstats"):
-            return json.dumps(oven.pid.pidstats)
+            stats.update(oven.pid.pidstats)
+    return json.dumps(stats)
 
 
 @app.post('/api')
