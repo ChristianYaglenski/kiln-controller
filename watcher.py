@@ -73,9 +73,10 @@ class Watcher(object):
         while(True):
             self.stats = self.get_stats()
 
-            if self.has_finished() and self.last_state != 'DONE':
-                self.last_state = 'DONE'
-                self.send_alert("Kiln has finished it's run. Stats are " + self.stats)
+            if self.has_finished(): 
+                if self.last_state != 'DONE':
+                    self.last_state = 'DONE'
+                    self.send_alert("Kiln has finished it's run.")
                 continue
 
             if self.has_errors():
