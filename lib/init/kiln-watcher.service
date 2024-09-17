@@ -1,0 +1,8 @@
+[Unit]
+Description=kiln-controller-watcher
+
+[Service]
+ExecStart=/home/pi/kiln-controller/venv/bin/python /home/pi/kiln-controller/watcher.py
+
+[Install]
+WantedBy=multi-user.target
