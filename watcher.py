@@ -10,7 +10,7 @@ import logging
 # configure an incoming web hook on the slack channel
 # set slack_hook_url to that
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(filename="kiln-watcher.log",level=logging.INFO)
 log = logging.getLogger(__name__)
 
 class Watcher(object):
@@ -76,8 +76,8 @@ class Watcher(object):
 if __name__ == "__main__":
 
     watcher = Watcher(
-        kiln_url = "http://192.168.1.84:8081/api/stats",
-        slack_hook_url = "you must add this",
+        kiln_url = "http://kiln.local:80/api/stats",
+        slack_hook_url = "https://hooks.slack.com/services/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",
         bad_check_limit = 6,
         temp_error_limit = 10,
         sleepfor = 10 )
