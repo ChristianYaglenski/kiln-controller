@@ -77,6 +77,7 @@ class Watcher(object):
                 if self.last_state != 'DONE':
                     self.last_state = 'DONE'
                     self.send_alert("Kiln has finished it's run.")
+                    time.sleep(self.sleepfor)
                 continue
 
             if self.has_errors():
