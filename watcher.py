@@ -127,7 +127,7 @@ if __name__ == "__main__":
 
     watcher = Watcher(
         kiln_url = "http://kiln.local:80/api/stats",
-        slack_hook_url = "https://hooks.slack.com/services/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",
+        slack_hook_url = "https://hooks.slack.com/services/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"
         bad_check_limit = 6,
         temp_error_limit = 10,
         sleepfor = 10 )
