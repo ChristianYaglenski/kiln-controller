@@ -24,6 +24,7 @@ class Watcher(object):
         self.bad_checks = 0
         self.stats = {}
         self.last_state = 'IDLE'
+        self.has_alerted_temperature = False
 
     def get_stats(self):
         try:
@@ -72,13 +73,37 @@ class Watcher(object):
 
         while(True):
             self.stats = self.get_stats()
+            # 'cost': self.cost,
+            # 'runtime': self.runtime,
+            # 'temperature': temp,
+            # 'target': self.target,
+            # 'state': self.state,
+            # 'heat': self.heat,
+            # 'heat_rate': self.heat_rate,
+            # 'totaltime': self.totaltime,
+            # 'kwh_rate': config.kwh_rate,
+            # 'currency_type': config.currency_type,
+            # 'profile': self.profile.name if self.profile else None,
+            # 'pidstats': self.pid.pidstats,
+            # 'catching_up': self.catching_up,
 
             if self.has_finished(): 
                 if self.last_state != 'DONE':
                     self.last_state = 'DONE'
                     self.send_alert("Kiln has finished it's run.")
                     time.sleep(self.sleepfor)
+
+                if 'temperature' in self.stats:
+                    if self.stats['temperature'] < 200 and not self.has_alerted_temperature:
+                        self.send_alert("Kiln is below 200º and can be opened I guess...")
+                        self.has_alerted_temperature = True
+
+                time.sleep(self.sleepfor)
                 continue
+
+            else:
+                self.has_alerted_temperature = False
+
 
             if self.has_errors():
                 self.bad_checks = self.bad_checks + 1
