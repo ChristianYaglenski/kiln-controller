@@ -271,6 +271,7 @@ def get_profiles():
     for filename in profile_files:
         with open(os.path.join(profile_path, filename), 'r') as f:
             profiles.append(json.load(f))
+    profiles.sort()
     profiles = normalize_temp_units(profiles)
     return json.dumps(profiles)
 
