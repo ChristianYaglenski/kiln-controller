@@ -264,7 +264,7 @@ def handle_status():
 
 def get_profiles():
     try:
-        profile_files = os.listdir(profile_path).sort()
+        profile_files = os.listdir(profile_path)
     except:
         profile_files = []
     profiles = []
