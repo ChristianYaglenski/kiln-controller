@@ -61,14 +61,21 @@ if(config.max31856):
 print("Degrees displayed in %s\n" % (config.temp_scale))
 
 temp = 0
+refTemp = 0
 while(True):
     time.sleep(1)
     try:
         temp = sensor.temperature
+        refTemp = sensor.reference_temperature
         scale = "C"
         if config.temp_scale == "f":
             temp = temp * (9/5) + 32 
+            refTemp = refTemp * (9/5) + 32
             scale ="F"
         print("%s %0.2f%s" %(datetime.datetime.now(),temp,scale))
+        print("%s refTemp %0.2f%s" %(datetime.datetime.now(),refTemp,scale))
+        for fault in sensor.fault.keys():
+            if sensor.fault.get(fault):
+                print(fault)
     except Exception as error:
         print("error: " , error)
