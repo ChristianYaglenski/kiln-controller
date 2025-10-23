@@ -26,24 +26,19 @@
 
  <div class="container">
   <div id="status">
-   <div class="ds-title-panel">
-    <div class="ds-title">Sensor Temp</div>
-    <div class="ds-title">Target Temp</div>
-    <div class="ds-title">Heat Rate</div>
-    <div class="ds-title">Cost</div>
-    <div class="ds-title ds-state pull-right" style="border-left: 1px solid #ccc;">Status</div>
-   </div>
-   <div class="clearfix"></div>
-   <div class="ds-panel">
-    <div class="display ds-num"><span id="act_temp">25</span><span class="ds-unit" id="act_temp_scale" >&deg;C</span></div>
-    <div class="display ds-num ds-target"><span id="target_temp">---</span><span class="ds-unit" id="target_temp_scale">&deg;C</span></div>
-    <div class="display ds-num ds-heat-rate"><span id="heat_rate">---</span><span class="ds-unit" id="heat_rate_temp_scale">&deg;C</span></div>
-    <div class="display ds-num ds-cost"><span id="cost">0.00</span><span class="ds-unit" id="cost"></span></div>
-    <div class="display ds-num ds-text" id="state"></div>
-    <div class="display pull-right ds-state" style="padding-right:0"><span class="ds-led" id="heat">&#92;</span><span class="ds-led" id="cool">&#108;</span><span class="ds-led" id="air">&#91;</span><span class="ds-led" id="hazard">&#73;</span><span class="ds-led" id="door">&#9832;</span></div>
-   </div>
-   <div class="clearfix"></div>
-   <div>
+   <div class="ds-title ds-title-sensor">Sensor Temp</div>
+   <div class="ds-title ds-title-target">Target Temp</div>
+   <div class="ds-title ds-title-heat-rate">Heat Rate</div>
+   <div class="ds-title ds-title-cost">Cost</div>
+   <div class="ds-title ds-title-schedule">Schedule Status</div>
+   <div class="ds-title ds-title-status">Kiln Status</div>
+   <div class="display ds-num ds-sensor"><span id="act_temp">25</span><span class="ds-unit" id="act_temp_scale" >&deg;C</span></div>
+   <div class="display ds-num ds-target"><span id="target_temp">---</span><span class="ds-unit" id="target_temp_scale">&deg;C</span></div>
+   <div class="display ds-num ds-heat-rate"><span id="heat_rate">---</span><span class="ds-unit" id="heat_rate_temp_scale">&deg;C</span></div>
+   <div class="display ds-num ds-cost"><span id="cost">0.00</span><span class="ds-unit" id="cost"></span></div>
+   <div class="display ds-num ds-text ds-schedule" id="state"></div>
+   <div class="display ds-state ds-status" style="padding-right:0"><span class="ds-led" id="heat">&#92;</span><span class="ds-led" id="cool">&#108;</span><span class="ds-led" id="air">&#91;</span><span class="ds-led" id="hazard">&#73;</span><span class="ds-led" id="door">&#9832;</span></div>
+   <div class="progress-wrapper">
     <div class="progress progress-striped active">
      <div id="progressBar" class="progress-bar"  role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
       <span class="sr-only"></span>
@@ -53,14 +48,14 @@
   </div>
   <div class="panel panel-default">
    <div class="panel-heading">
-    <div id="profile_selector" class="pull-left">
+    <div id="profile_selector_wrapper" class="pull-left">
      <select id="e2" class="select2" style="margin-top: 4px"></select>
      <button id="btn_edit" type="button" class="btn btn-default" onclick="enterEditMode()"><span class="glyphicon glyphicon-edit"></span></button>
      <button id="btn_new" type="button" class="btn btn-default" onclick="enterNewMode(selected_profile)"><span class="glyphicon glyphicon-plus"></span></button>
     </div>
    <div id="btn_controls" class="pull-right" style="margin-top: 3px">
     <div id="nav_start" class="btn-group" style="display:none">
-     <button type="button" class="btn btn-default" style="visibility: hidden;"  onclick="runTaskSimulation();">Simulate</button>
+     <button type="button" class="btn btn-default" style="visibility: hidden; display: none;"  onclick="runTaskSimulation();">Simulate</button>
      <button type="button" class="btn btn-success" data-toggle="modal" data-target="#jobSummaryModal"><span class="glyphicon glyphicon-play"></span> Start</button>
     </div>
     <button id="nav_stop" type="button" class="btn btn-danger" onclick="abortTask()" style="display:none" ><span class="glyphicon glyphicon-stop"></span> Stop</button>
